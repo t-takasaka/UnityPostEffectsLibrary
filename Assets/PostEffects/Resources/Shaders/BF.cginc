@@ -57,7 +57,9 @@ float4 fragBF(v2f_img i) : SV_Target
 	float stepLen;
 	calcStep(i.uv, isGradient, stepDir, stepLen);
 	stepDir *= _BFStepDirScale;
-	stepLen *= _BFStepLenScale;
+	// Unity側で保存直後に0が渡されることがある
+	// 後段のfor文で無限ループになるため最低1を入れておく
+	stepLen *= max(1.0f, _BFStepLenScale);
 
 	float4 color = smpl(i.uv);
 	float4 colorSum = color;
@@ -83,7 +85,9 @@ void convFBF(float2 uv, float4 tangent, float4 color, inout float4 colorSum)
 	{
 		// 接線方向の1ステップ分の距離
 		float2 stepLen = getTangentStepLen(uv, tangent, offset);
-		stepLen *= _BFStepLenScale;
+		// Unity側で保存直後に0が渡されることがある
+		// 後段のfor文で無限ループになるため最低1を入れておく
+		stepLen *= max(1.0f, _BFStepLenScale);
 		totalLen += stepLen.x + stepLen.y;
 
 		// 負荷の割に影響が薄いので一旦無効化

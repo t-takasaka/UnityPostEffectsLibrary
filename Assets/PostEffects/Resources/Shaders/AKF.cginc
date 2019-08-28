@@ -63,10 +63,14 @@ void convAKF(float2 uv, int2 boundingBox, float2x2 toUnitCircleMat,
 	inout float4 weightSum, inout float4x4 meanEvenSum, inout float4x4 sqMeanEvenSum,
 	inout float4x4 meanOddSum, inout float4x4 sqMeanOddSum)
 {
+	// Unity側で保存直後に0が渡されることがある
+	// 後段のfor文で無限ループになるため最低1を入れておく
+	int sampleStep = max(1, _AKFSampleStep);
+
 	// 処理量を半分にするため中心から点対称にサンプルするので、yは片側だけで足りる
-	for (int y = 0; y <= boundingBox.y; y += _AKFSampleStep)
+	for (int y = 0; y <= boundingBox.y; y += sampleStep)
 	{
-		for (int x = -boundingBox.x; x <= boundingBox.x; x += _AKFSampleStep)
+		for (int x = -boundingBox.x; x <= boundingBox.x; x += sampleStep)
 		{
 			// 点対称にサンプルするので、中央横方向のxは片側だけで足りる
 			if (step(y, 0) * step(x, -1) == 1.0) { continue; }

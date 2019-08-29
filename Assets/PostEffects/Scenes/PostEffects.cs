@@ -1,10 +1,7 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityPostEffecs
 {
-    using ET = PostEffects.EffectType;
-
     [ExecuteInEditMode, ImageEffectAllowedInSceneView, RequireComponent(typeof(Camera))]
     public class PostEffects : MonoBehaviour
     {
@@ -100,77 +97,13 @@ namespace UnityPostEffecs
 
             needsUpdate = true;
         }
-
-        private CC cc = new CC();
-        private Canvas cavas = new Canvas();
-        private Posterize pst = new Posterize();
-        private SBR sbr = new SBR();
-        private WCR wcr = new WCR();
-        private BF bf = new BF();
-        private AKF akf = new AKF();
-        private SNN snn = new SNN();
-        private FXDoG fxdog = new FXDoG();
-        private Outline outline = new Outline();
-        private LIC lic = new LIC();
-        private GBlur gblur = new GBlur();
-        private SNoise snoise = new SNoise();
-        private FNoise fnoise = new FNoise();
-        private Test test = new Test();
-        private TestBF testBF = new TestBF();
-
-        private void UpdateParameters(int width, int height)
-        {
-            cc.Set(CommonParameters.CCParameters);
-            cavas.Set(CommonParameters.CanvasParameters);
-            sbr.Set(SBRParameters, manager.SBR_LAYER_MAX, width, height);
-            wcr.Set(WCRParameters, CommonParameters.CanvasParameters);
-            bf.Set(BFParameters);
-            akf.Set(AKFParameters);
-            snn.Set(SNNParamters);
-            outline.Set(OutlineParameters);
-            fxdog.Set(FXDoGParamters);
-            lic.Set(DebugParameters);
-            gblur.Set(DebugParameters.GBlurParameters);
-            pst.Set(DebugParameters.PosterizeParameters);
-            snoise.Set(DebugParameters.SimplexNoiseParameters);
-            fnoise.Set(DebugParameters.FlowNoiseParameters);
-            test.Set(DebugParameters.TestParameters);
-            testBF.Set(DebugParameters.TestBFParameters);
-        }
+        public void OnGUI() { needsUpdate = true; }
 
         public void OnRenderImage(RenderTexture src, RenderTexture dst)
         {
             if (!manager.initialized) { return; }
 
-            if (needsUpdate){ UpdateParameters(src.width, src.height); }
-
-            manager.Begin(src, cc, needsUpdate);
-            manager.Canvas(cavas);
-            switch (helper.currentEffect)
-            {
-                case ET.SBR: manager.SBR(dst, gblur, pst, sbr); break;
-                case ET.WCR: manager.WCR(dst, gblur, bf, wcr); break;
-                case ET.BF: manager.BF(dst, gblur, bf); break;
-                case ET.AKF: manager.AKF(dst, gblur, akf); break;
-                case ET.SNN: manager.SNN(dst, pst, snn); break;
-                case ET.FXDoG: manager.FXDoG(dst, gblur, fxdog); break;
-                case ET.Outline: manager.Outline(dst, outline); break;
-                case ET.Mask: manager.Mask(dst); break;
-                case ET.Sobel: manager.Sobel(dst); break;
-                case ET.SST: manager.SST(dst, gblur); break;
-                case ET.TFM: manager.TFM(dst, gblur); break;
-                case ET.LIC: manager.LIC(dst, gblur, lic); break;
-                case ET.GBlur: manager.GBlur(dst, gblur); break;
-                case ET.Posterize: manager.Posterize(dst, pst); break;
-                case ET.SNoise: manager.SNoise(dst, snoise); break;
-                case ET.FNoise: manager.FNoise(dst, fnoise); break;
-                case ET.VNoise: manager.VNoise(dst); break;
-                case ET.Test: manager.Test(dst, test); break;
-                case ET.TestBF: manager.TestBF(dst, testBF, gblur); break;
-                default: manager.Default(dst); break;
-            }
-            manager.End();
-
+            manager.Render(src, dst, helper.currentEffect, needsUpdate);
             needsUpdate = false;
         }
         public void SetDefaultParamsSBR() 

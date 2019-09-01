@@ -85,6 +85,8 @@
             wcr.HandTremorAmplitude2 = 0.0f;
             wcr.HandTremorLen = 10.0f;
             wcr.HandTremorScale = 1.0f;
+            wcr.HandTremorDrawCount = 16;
+            wcr.HandTremorOverlapCount = 2;
             wcr.PigmentDispersionScale = 1.0f;
             wcr.TurbulenceFowWaveLen1 = 2.0f;
             wcr.TurbulenceFowAmplitude1 = 120.0f;

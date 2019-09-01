@@ -10,51 +10,83 @@ float hue2rad(float h1, float h2)
 	h2 = h2 * 2.0 - 1.0;
 	return atan2(h2, h1);
 }
-float3 hue2rgb(float h1, float h2)
+float3 hue2rgb(float h)
 {
-	float h = hue2rad(h1, h2) * INV_PI2;
 	h = frac(h + 1.0) * 6.0;
 	float r = abs(h - 3.0) - 1.0;
-	float g = 2 - abs(h - 2.0);
-	float b = 2 - abs(h - 4.0);
+	float g = 2.0 - abs(h - 2.0);
+	float b = 2.0 - abs(h - 4.0);
 	return saturate(float3(r, g, b));
 }
-float4 rgb2hcv(float3 rgb)
+float3 hue2rgb2(float h1, float h2)
+{
+	float h = hue2rad(h1, h2) * INV_PI2;
+	return hue2rgb(h);
+}
+float3 rgb2hcv(float3 rgb)
 {
 	static const float4 k = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
 	float4 p = lerp(float4(rgb.bg, k.wz), float4(rgb.gb, k.xy), step(rgb.b, rgb.g));
 	float4 q = lerp(float4(p.xyw, rgb.r), float4(rgb.r, p.yzx), step(p.x, rgb.r));
 	float c = q.x - min(q.w, q.y);
 	float h = abs((q.w - q.y) / (6.0 * c + EPSILON) + q.z);
-
-	// 色相を直線ではなく円で指定できるようにする
-	// 直線だと両端にまたがる色域の指定が面倒なため
-	float rad = h * PI2;
+	return float3(h, c, q.x);
+}
+// 色相を直線ではなく円で指定できるようにする
+// 直線だと両端にまたがる色域の指定が面倒なため
+float4 rgb2hcv2(float3 rgb)
+{
+	float3 hcq = rgb2hcv(rgb);
+	float rad = hcq.x * PI2;
 	float h1 = cos(rad) * 0.5 + 0.5;
 	float h2 = sin(rad) * 0.5 + 0.5;
-	return float4(h1, h2, c, q.x);
+	return float4(h1, h2, hcq.y, hcq.z);
 }
-float4 rgb2hsv(float3 rgb)
+float3 rgb2hsv(float3 rgb)
 {
-	float4 hcv = rgb2hcv(rgb);
+	float3 hcv = rgb2hcv(rgb);
+	float s = hcv.y / (hcv.z + EPSILON);
+	return float3(hcv.x, s, hcv.z);
+}
+float4 rgb2hsv2(float3 rgb)
+{
+	float4 hcv = rgb2hcv2(rgb);
 	float s = hcv.z / (hcv.w + EPSILON);
 	return float4(hcv.x, hcv.y, s, hcv.w);
 }
-float3 hsv2rgb(float4 hsv)
+float3 hsv2rgb(float3 hsv)
 {
-	float3 rgb = hue2rgb(hsv.x, hsv.y);
+	float3 rgb = hue2rgb(hsv.x);
+	return ((rgb - 1.0) * hsv.y + 1.0) * hsv.z;
+}
+float3 hsv2rgb2(float4 hsv)
+{
+	float3 rgb = hue2rgb2(hsv.x, hsv.y);
 	return ((rgb - 1.0) * hsv.z + 1.0) * hsv.w;
 }
-float4 rgb2hsl(float3 rgb)
+float3 rgb2hsl(float3 rgb)
 {
-	float4 hcv = rgb2hcv(rgb);
+	float3 hcv = rgb2hcv(rgb);
+	float l = hcv.z - hcv.y * 0.5;
+	float s = hcv.y / (1.0 - abs(l * 2.0 - 1.0) + EPSILON);
+	return float3(hcv.x, s, l);
+}
+float4 rgb2hsl2(float3 rgb)
+{
+	float4 hcv = rgb2hcv2(rgb);
 	float l = hcv.w - hcv.z * 0.5;
 	float s = hcv.z / (1.0 - abs(l * 2.0 - 1.0) + EPSILON);
 	return float4(hcv.x, hcv.y, s, l);
 }
-float3 hsl2rgb(float4 hsl)
+float3 hsl2rgb(float3 hsl)
 {
-	float3 rgb = hue2rgb(hsl.x, hsl.y);
+	float3 rgb = hue2rgb(hsl.x);
+	float c = (1.0 - abs(2.0 * hsl.z - 1.0)) * hsl.y;
+	return (rgb - 0.5) * c + hsl.z;
+}
+float3 hsl2rgb2(float4 hsl)
+{
+	float3 rgb = hue2rgb2(hsl.x, hsl.y);
 	float c = (1.0 - abs(2.0 * hsl.w - 1.0)) * hsl.z;
 	return (rgb - 0.5) * c + hsl.w;
 }
@@ -115,10 +147,10 @@ float3 lab2rgb(float3 lab)
 float rgb2lum(float3 rgb) { return dot(float3(0.299, 0.587, 0.114), rgb); }
 float rgb2avg(float3 rgb) { return (rgb.r + rgb.g + rgb.b) * 0.333; }
 
-inline float4 fragRGB2HSV(v2f_img i) : SV_Target{ return rgb2hsv(tex2Dlod(_MainTex, float4(i.uv, 0, 0)).rgb); }
-inline float4 fragHSV2RGB(v2f_img i) : SV_Target{ return float4(hsv2rgb(tex2Dlod(_MainTex, float4(i.uv, 0, 0))), 1.0); }
-inline float4 fragRGB2HSL(v2f_img i) : SV_Target{ return rgb2hsl(tex2Dlod(_MainTex, float4(i.uv, 0, 0)).rgb); }
-inline float4 fragHSL2RGB(v2f_img i) : SV_Target{ return float4(hsl2rgb(tex2Dlod(_MainTex, float4(i.uv, 0, 0))), 1.0); }
+inline float4 fragRGB2HSV(v2f_img i) : SV_Target{ return rgb2hsv2(tex2Dlod(_MainTex, float4(i.uv, 0, 0)).rgb); }
+inline float4 fragHSV2RGB(v2f_img i) : SV_Target{ return float4(hsv2rgb2(tex2Dlod(_MainTex, float4(i.uv, 0, 0))), 1.0); }
+inline float4 fragRGB2HSL(v2f_img i) : SV_Target{ return rgb2hsl2(tex2Dlod(_MainTex, float4(i.uv, 0, 0)).rgb); }
+inline float4 fragHSL2RGB(v2f_img i) : SV_Target{ return float4(hsl2rgb2(tex2Dlod(_MainTex, float4(i.uv, 0, 0))), 1.0); }
 inline float4 fragRGB2YUV(v2f_img i) : SV_Target{ return float4(rgb2yuv(tex2Dlod(_MainTex, float4(i.uv, 0, 0)).rgb), 1.0); }
 inline float4 fragYUV2RGB(v2f_img i) : SV_Target{ return float4(yuv2rgb(tex2Dlod(_MainTex, float4(i.uv, 0, 0))), 1.0); }
 inline float4 fragRGB2LAB(v2f_img i) : SV_Target{ return float4(rgb2lab(tex2Dlod(_MainTex, float4(i.uv, 0, 0)).rgb), 1.0); }
@@ -127,7 +159,7 @@ inline float4 fragLAB2RGB(v2f_img i) : SV_Target{ return float4(lab2rgb(tex2Dlod
 float _HSV_H1, _HSV_H2, _HSV_S, _HSV_V;
 inline float4 fragDebugHSV(v2f_img i) : SV_Target
 {
-	return float4(hsv2rgb(float4(_HSV_H1, _HSV_H2, _HSV_S, _HSV_V)), 1.0);
+	return float4(hsv2rgb2(float4(_HSV_H1, _HSV_H2, _HSV_S, _HSV_V)), 1.0);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -211,20 +243,20 @@ inline float3 blendDivide(float3 base, float3 ref){ return ref / base; }
 
 inline float3 blendHue(float3 base, float3 ref)
 {
-	float4 hsv = rgb2hsv(base);
-	hsv.xy = rgb2hsv(ref).xy;
+	float3 hsv = rgb2hsv(base);
+	hsv.x = rgb2hsv(ref).x;
 	return hsv2rgb(hsv);
 }
 inline float3 blendSaturation(float3 base, float3 ref)
 {
-	float4 hsv = rgb2hsv(base);
-	hsv.z = rgb2hsv(ref).z;
+	float3 hsv = rgb2hsv(base);
+	hsv.y = rgb2hsv(ref).y;
 	return hsv2rgb(hsv);
 }
 inline float3 blendColor(float3 base, float3 ref)
 {
-	float4 hsv = rgb2hsv(ref);
-	hsv.w = rgb2hsv(base).w;
+	float3 hsv = rgb2hsv(ref);
+	hsv.z = rgb2hsv(base).z;
 	return hsv2rgb(hsv);
 }
 inline float3 blendLuminosity(float3 base, float3 ref)

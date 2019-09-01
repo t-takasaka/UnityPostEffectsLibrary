@@ -222,8 +222,10 @@ namespace UnityPostEffecs
         }
         public void Posterize(RT dst)
         {
+            shader.UpdateGBlur(gblur); 
+            shader.RenderGBlur(shader.RT_WORK0, shader.RT_WORK2, gblur);
             shader.UpdatePosterize(pst, false);
-            shader.RenderPosterize(shader.RT_WORK0, dst);
+            shader.RenderPosterize(shader.RT_WORK2, dst);
         }
         public void SNoise(RT dst)
         {

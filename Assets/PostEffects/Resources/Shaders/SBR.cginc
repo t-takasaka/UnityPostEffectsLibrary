@@ -210,7 +210,7 @@ void convSBR(float2 texPos, float4 hsv, int layer, inout float4 colorSum)
 			hsvNeighbor = colorGradingSBR(layer, gridRand, hsvNeighbor);
 
 			// HSVからRGBに戻す
-			float4 rgbNeighbor = float4(hsv2rgb(hsvNeighbor), 1.0);
+			float4 rgbNeighbor = float4(hsv2rgb2(hsvNeighbor), 1.0);
 			colorSum = lerp(colorSum, rgbNeighbor, weight);
 		}
 	}

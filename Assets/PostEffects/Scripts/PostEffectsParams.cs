@@ -167,6 +167,7 @@ namespace UnityPostEffecs
     public class WCR
     {
         public float Bleeding, Opacity, HandTremorLen, HandTremorScale;
+        public float HandTremorDrawCount, HandTremorInvDrawCount, HandTremorOverlapCount;
         public float PigmentDispersionScale, TurbulenceFowScale1, TurbulenceFowScale2;
         public float WetInWetLenRatio, WetInWetInvLenRatio;
         public float WetInWetLow, WetInWetHigh;
@@ -180,13 +181,13 @@ namespace UnityPostEffecs
 
         public void Set(InsWCR wcr, CommonOptions.InsCanvas can) 
         {
-            double hoge = Math.Pow(2, -14);
-            double fuga = Math.Log(hoge);
-
             Bleeding = wcr.Bleeding;
             Opacity = wcr.Opacity;
             HandTremorLen = wcr.HandTremorLen;
             HandTremorScale = wcr.HandTremorScale;
+            HandTremorDrawCount = wcr.HandTremorDrawCount;
+            HandTremorInvDrawCount = 1.0f / wcr.HandTremorDrawCount;
+            HandTremorOverlapCount = wcr.HandTremorOverlapCount;
             PigmentDispersionScale = wcr.PigmentDispersionScale; 
             TurbulenceFowScale1 = wcr.TurbulenceFowScale1;
             TurbulenceFowScale2 = wcr.TurbulenceFowScale2;
@@ -262,6 +263,7 @@ namespace UnityPostEffecs
         public float SampleLen;
         public float DomainVariance, RangeVariance;
         public float DomainBias, RangeBias;
+        public float RangeThreshold;
         public float StepDirScale, StepLenScale;
         public bool UsePreCalc = false;
         public float[] RangeWeight = new float[256];
@@ -272,6 +274,7 @@ namespace UnityPostEffecs
             BlurCount = bf.BlurCount;
             SampleLen = bf.SampleLen;
             RangeBias = bf.ColorBias;
+            RangeThreshold = 1.0f / bf.ColorThreshold;
             DomainBias = bf.DistanceBias;
             // Gσ(x) = exp(−(x^2) / (2 * σ^2)) の (2 * σ^2)
             // 分母として使うので逆数にしておく

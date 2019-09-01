@@ -10,6 +10,7 @@ float _BFDomainVariance;
 float _BFDomainBias;
 float _BFRangeVariance;
 float _BFRangeBias;
+float _BFRangeThreshold;
 float _BFStepDirScale;
 float _BFStepLenScale;
 
@@ -39,12 +40,11 @@ void calcWeightBF2(float4 color, float2 uv, float2 offset, float domainWeight, i
 }
 
 // レンジが極めて近い画素の重みを1.0、それ以外は0.0で決め打ちするパターン
-static const float rangeThreshold = 1.0 / 255.0;
 inline void calcWeightBF3(float4 color, float2 uv, float2 offset, float domainWeight, inout float4 colorSum)
 {
 	float4 colorNeighbor = smpl(uv + offset);
 	float4 range = (colorNeighbor - color);
-	float weight = step(dot(range, range), rangeThreshold);
+	float weight = step(dot(range, range), _BFRangeThreshold);
 	colorSum += colorNeighbor * weight;
 }
 

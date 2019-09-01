@@ -184,6 +184,8 @@ namespace UnityPostEffecs
         [SerializeField, Range(0.0f, 100.0f)] internal float HandTremorAmplitude2 = 0.0f;
         [SerializeField, Range(0.0f, 30.0f)] internal float HandTremorLen = 10.0f;
         [SerializeField, Range(0.0f, 3.0f)] internal float HandTremorScale = 1.0f;
+        [SerializeField, Range(8, 32)] internal int HandTremorDrawCount = 16;
+        [SerializeField, Range(2, 4)] internal int HandTremorOverlapCount = 2;
         [SerializeField, Range(0.0f, 4.0f)] internal float PigmentDispersionScale = 1.0f;
         [SerializeField, Range(0.0f, 4.0f)] internal float TurbulenceFowWaveLen1 = 2.0f;
         [SerializeField, Range(0.0f, 300.0f)] internal float TurbulenceFowAmplitude1 = 120.0f;
@@ -221,6 +223,7 @@ namespace UnityPostEffecs
         [SerializeField, Range(0.1f, 2.0f)] internal float DistanceBias = 1.0f;
         [SerializeField, Range(0.1f, 4.0f)] internal float ColorSigma = 2.0f;
         [SerializeField, Range(0.1f, 128.0f)] internal float ColorBias = 64.0f;
+        [SerializeField, Range(1.0f, 1024.0f)] internal float ColorThreshold = 4.0f;
         [SerializeField, Range(1.0f, 10.0f)] internal float StepDirScale = 2.0f;
         [SerializeField, Range(1.0f, 4.0f)] internal float StepLenScale = 1.0f;
     }

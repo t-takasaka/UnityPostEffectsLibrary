@@ -8,6 +8,9 @@ float _WCRBleeding;
 float _WCROpacity;
 float _WCRHandTremorLen;
 float _WCRHandTremorScale;
+float _WCRHandTremorDrawCount;
+float _WCRHandTremorInvDrawCount;
+float _WCRHandTremorOverlapCount;
 float _WCRPigmentDispersionScale;
 float _WCRTurbulenceFowScale1, _WCRTurbulenceFowScale2;
 float _WetInWetLenRatio, _WetInWetInvLenRatio;
@@ -19,8 +22,9 @@ float _EdgeDarkingSize;
 float _EdgeDarkingScale;
 
 // 手振れを加える
-float4 addHandTremor(float2 uv, float invDivNum, float index, float4 color)
+float4 addHandTremor(float2 uv, float index, float4 color)
 {
+	float invDivNum = _WCRHandTremorInvDrawCount;
 	float num = invDivNum * index;
 	float4 noise1 = smpl(_RT_WORK6, frac(uv + num));
 	float4 noise2 = smpl(_RT_WORK6, frac(1.0 - (uv + num)));
@@ -38,16 +42,19 @@ float4 addHandTremor(float2 uv, float invDivNum, float index, float4 color)
 	if (mask == 1.0) { return smpl(uv); }
 
 	float4 colorNeighbor = smpl(uv + offset);
-	float4 hsvNeighbor = rgb2hsv(colorNeighbor.rgb);
-	float lumNeighbor = hsvNeighbor.w;
+	float3 hsvNeighbor = rgb2hsv(colorNeighbor.rgb);
+	float lumNeighbor = hsvNeighbor.z;
 
 	// アルゴリズムの性質で真白の上に塗り重ねることができないので、
 	// その場合はサンプルした色をそのまま塗る
-	float isWhite = step(1.0, rgb2hsv(color).w);
+	float isWhite = step(1.0, rgb2hsv(color).z);
 
-	float low = step(num, lumNeighbor);
-	// 領域の端に塗りが重なる部分を作りたいので2諧調ごとに区分する
-	float high = step(lumNeighbor, min(1.0, (num + invDivNum) + invDivNum));
+	// 領域の端に塗りが重なる部分を作るため、諧調ごとに区分する
+	float overlapCount = _WCRHandTremorOverlapCount;
+	float overlapCountLow = (ceil(overlapCount * 0.5) - 1) * invDivNum;
+	float overlapCountHigh = (floor(overlapCount * 0.5) + 1) * invDivNum;
+	float low = step(max(0.0, num - overlapCountLow), lumNeighbor);
+	float high = step(lumNeighbor, min(1.0, num + overlapCountHigh));
 	// 区分の範囲外なら処理しない
 	// TODO：注目画素が真黒のときに塗り漏れが起きる？？？
 	//if (low * high == 0.0) { return lerp(color, colorNeighbor, isWhite); }
@@ -61,11 +68,11 @@ float4 addHandTremor(float2 uv, float invDivNum, float index, float4 color)
 float4 addTurbulenceFow(float2 uv, float4 color)
 {
 	float2 noise = smpl(_RT_WORK6, uv).zw;
-	float4 hsv = rgb2hsv(color.rgb);
+	float3 hsv = rgb2hsv(color.rgb);
 
 	// 彩度が0.0だと真黒になるのでEPSILONとmaxを取る
 	noise.x = max(EPSILON, frac(noise.x));
-	hsv.z = noise.x;
+	hsv.y = noise.x;
 	float3 intensity = abs(hsv2rgb(hsv) - color.rgb);
 	color.rgb = colorModification(intensity, color.rgb, _WCRTurbulenceFowScale1);
 
@@ -77,11 +84,9 @@ float4 fragHandTremor(v2f_img i) : SV_Target
 	// 注目画素の色ではなく真白から塗り重ねる
 	float4 ret = 1.0;
 
-	static const float divNum = 16.0;
-	static const float invDivNum = 1.0 / divNum;
-	for (float index = 0.0; index < divNum; index += 1.0)
+	for (float index = 0.0; index < _WCRHandTremorDrawCount; index += 1.0)
 	{
-		ret = addHandTremor(i.uv, invDivNum, index, ret);
+		ret = addHandTremor(i.uv, index, ret);
 	}
 
 	// 注目画素がマスク領域なら歪ませない
@@ -128,8 +133,9 @@ void isEdgeWCR(float2 uv, float stepLen, float2 stepDir, inout float2 offset, in
 void hueDistanceWCR(float2 uv, float4 color, inout float hueDist, inout float isDark)
 {
 	float4 colorNeighbor = smpl(uv);
-	float4 hsvNeighbor = rgb2hsv(colorNeighbor.rgb);
-	float4 hsv = rgb2hsv(color.rgb);
+	// hueの距離を知りたいので極座標系のHSVに変換する
+	float4 hsvNeighbor = rgb2hsv2(colorNeighbor.rgb);
+	float4 hsv = rgb2hsv2(color.rgb);
 
 	// 色相環360度のうち注目画素と近傍画素の距離
 	hueDist = hueDistance(hsvNeighbor, hsv);
@@ -146,7 +152,7 @@ float convWetInWet(float2 uv, float dist, float hueDist, float isDark, inout flo
 	// ランダム値の範囲を0.0～1.0から-1.0～1.0に変更
 	float2 noise = float2(noise1, noise2);
 	float4 colorNeighbor = smpl(uv);
-	float4 hsvNeighbor = rgb2hsv(colorNeighbor);
+	float3 hsvNeighbor = rgb2hsv(colorNeighbor);
 
 	// 注目画素が滲みの届く範囲内にあるか
 	dist = max(0.0, dist - _WetInWetLenRatio) * _WetInWetInvLenRatio;
@@ -159,8 +165,8 @@ float convWetInWet(float2 uv, float dist, float hueDist, float isDark, inout flo
 	// 近傍画素の輝度が閾値の上限、下限の範囲外なら滲ませない
 	// 閾値が目立たないように上限下限の両端を補間する
 	float low = _WetInWetLow, high = _WetInWetHigh;
-	float thresholdLow = smoothstep(low, low + 0.1, hsvNeighbor.w);
-	float thresholdHigh = 1.0 - smoothstep(high - 0.1, high, hsvNeighbor.w);
+	float thresholdLow = smoothstep(low, low + 0.1, hsvNeighbor.z);
+	float thresholdHigh = 1.0 - smoothstep(high - 0.1, high, hsvNeighbor.z);
 	float threshold = thresholdLow * thresholdHigh;
 
 	float weight = spike * withinHueRange * darkOrLight * threshold;
@@ -231,11 +237,11 @@ float4 addPigmentDispersion(float2 uv, float4 color)
 	float noise4 = genGNoise4(uv, 4.0);
 	float noise = (noise2 + noise3 + noise4);
 
-	float4 hsl = rgb2hsl(color.rgb);
-	hsl.z = max(EPSILON, frac(hsl.z + noise));
+	float3 hsl = rgb2hsl(color.rgb);
+	hsl.y = max(EPSILON, frac(hsl.y + noise));
 	float3 intensity = abs(hsl2rgb(hsl) - color.rgb);
 	// 明度が低いか彩度が高い箇所に偏らせる
-	intensity *= smoothstep(0.0, 1.0, max(hsl.z, (1.0 - hsl.w)));
+	intensity *= smoothstep(0.0, 1.0, max(hsl.y, (1.0 - hsl.z)));
 	color.rgb = colorModification(intensity, color.rgb, _WCRPigmentDispersionScale);
 
 	return color;

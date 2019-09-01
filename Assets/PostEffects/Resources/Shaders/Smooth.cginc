@@ -21,8 +21,10 @@ float4 posterizeHSV(float4 hsv)
 float4 fragPosterize(v2f_img i) : SV_Target
 {
 	float4 color = smpl(i.uv);
-	float4 hsv = posterizeHSV(rgb2hsv(color.rgb));
-	return lerp(float4(hsv2rgb(hsv), 1.0), hsv, _PosterizeReturnHSV);
+	float3 lab = posterizeLAB(rgb2lab(color.rgb));
+	color.rgb = lab2rgb(lab);
+
+	return lerp(color, rgb2hsv2(color.rgb), _PosterizeReturnHSV);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,6 +115,5 @@ float4 fragGBlur2(v2f_img i) : SV_Target
 	}
 	return colorSum / colorSum.a;
 }
-
 
 #endif

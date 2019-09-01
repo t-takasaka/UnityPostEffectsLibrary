@@ -158,6 +158,9 @@ namespace UnityPostEffecs
             SetFloat("_WCROpacity", wcr.Opacity);
             SetFloat("_WCRHandTremorLen", wcr.HandTremorLen);
             SetFloat("_WCRHandTremorScale", wcr.HandTremorScale);
+            SetFloat("_WCRHandTremorDrawCount", wcr.HandTremorDrawCount);
+            SetFloat("_WCRHandTremorInvDrawCount", wcr.HandTremorInvDrawCount);
+            SetFloat("_WCRHandTremorOverlapCount", wcr.HandTremorOverlapCount);
             SetFloat("_WCRPigmentDispersionScale", wcr.PigmentDispersionScale);
             SetFloat("_WCRTurbulenceFowScale1", wcr.TurbulenceFowScale1);
             SetFloat("_WCRTurbulenceFowScale2", wcr.TurbulenceFowScale2);
@@ -207,6 +210,7 @@ namespace UnityPostEffecs
             SetFloat("_BFDomainBias", bf.DomainBias);
             SetFloat("_BFRangeVariance", bf.RangeVariance);
             SetFloat("_BFRangeBias", bf.RangeBias);
+            SetFloat("_BFRangeThreshold", bf.RangeThreshold);
             SetFloat("_BFStepDirScale", bf.StepDirScale);
             SetFloat("_BFStepLenScale", bf.StepLenScale);
 

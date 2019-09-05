@@ -299,10 +299,12 @@ namespace UnityPostEffecs
     public class SNN
     {
         public int Radius;
+        public float Weight;
 
         public void Set(InsSNN snn)
         {
             Radius = snn.Radius;
+            Weight = (Radius * (Radius * 2 + 1) + Radius) * 2.0f;
         }
     }
 
@@ -422,6 +424,35 @@ namespace UnityPostEffecs
                     DomainWeight[index] = weight;
                 }
             }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    // Unsharp Mask
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    public class UnsharpMask
+    {
+        public int LOD, TileSize, SampleLen, BlurSize;
+        public float InvDomainSigma;
+        public float DomainVariance;
+        public float DomainBias;
+        public float Mean;
+        public float Sharpness;
+ 
+        public void Set(DebugOptions.InsUnsharpMask um) 
+        {
+            LOD = um.LOD;
+            TileSize = 1 << LOD;
+            SampleLen = Max(TileSize, um.SampleLen);
+	        BlurSize = SampleLen / TileSize;
+
+            float domainSigma = SampleLen * (1.0f / TileSize) * um.DomainSigma;
+            InvDomainSigma = 1.0f / domainSigma;
+            DomainVariance = 1.0f / (domainSigma * domainSigma * 2.0f);
+            DomainBias = um.DomainBias;
+
+	        Mean = SampleLen * 0.5f;
+            Sharpness = um.Sharpness;
         }
     }
 

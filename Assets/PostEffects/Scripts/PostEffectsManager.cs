@@ -24,6 +24,7 @@ namespace UnityPostEffecs
         private Outline outline = new Outline();
         private LIC lic = new LIC();
         private GBlur gblur = new GBlur();
+        private UnsharpMask umask = new UnsharpMask();
         private SNoise snoise = new SNoise();
         private FNoise fnoise = new FNoise();
         private Test test = new Test();
@@ -67,6 +68,7 @@ namespace UnityPostEffecs
             fxdog.Set(pe.FXDoGParamters);
             lic.Set(pe.DebugParameters);
             gblur.Set(pe.DebugParameters.GBlurParameters);
+            umask.Set(pe.DebugParameters.UnsharpMaskParameters);
             pst.Set(pe.DebugParameters.PosterizeParameters);
             snoise.Set(pe.DebugParameters.SimplexNoiseParameters);
             fnoise.Set(pe.DebugParameters.FlowNoiseParameters);
@@ -94,6 +96,7 @@ namespace UnityPostEffecs
                 case ET.TFM: TFM(dst); break;
                 case ET.LIC: LIC(dst); break;
                 case ET.GBlur: GBlur(dst); break;
+                case ET.UMask: UnsharpMask(dst); break;
                 case ET.Posterize: Posterize(dst); break;
                 case ET.SNoise: SNoise(dst); break;
                 case ET.FNoise: FNoise(dst); break;
@@ -171,6 +174,7 @@ namespace UnityPostEffecs
             }
 
             BF(shader.GetRT(shader.RT_WORK0));
+            //shader.UpdateUnsharpMask(umask); 
             shader.UpdateHandTremor(wcr);
             shader.RenderHandTremor(shader.RT_WORK0, shader.RT_WORK4, wcr);
             shader.Swap(shader.RT_WORK4, shader.RT_WORK0);
@@ -220,6 +224,12 @@ namespace UnityPostEffecs
             shader.UpdateLIC(lic);
             shader.RenderLIC(dst);
         }
+        public void UnsharpMask(RT dst)
+        {
+            shader.UpdateUnsharpMask(umask); 
+            shader.RenderUnsharpMask(shader.RT_WORK0, dst, umask);
+        }
+
         public void Posterize(RT dst)
         {
             shader.UpdateGBlur(gblur); 

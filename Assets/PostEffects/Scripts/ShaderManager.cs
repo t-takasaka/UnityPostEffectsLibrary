@@ -238,6 +238,7 @@ namespace UnityPostEffecs
             if (!needsUpdate) { return; }
 
             SetInt("_SNNRadius", snn.Radius);
+            SetFloat("_SNNWeight", snn.Weight);
         }
         public void RenderSNN(int src, RT dst) { Blit(src, dst, "SNN"); }
         public void RenderSNN(int src, int dst) { RenderSNN(src, workRT[dst]); }
@@ -352,6 +353,23 @@ namespace UnityPostEffecs
 
         public void RenderLIC(RT dst) { Blit(RT_TFM, dst, "LIC"); }
         public void RenderLIC(int dst) { RenderLIC(workRT[dst]); }
+
+        public void UpdateUnsharpMask(UnsharpMask um)
+        {
+            if (!needsUpdate) { return; }
+
+            SetInt("_UnsharpMaskLOD", um.LOD);
+            SetInt("_UnsharpMaskTileSize", um.TileSize);
+            SetInt("_UnsharpMaskSampleLen", um.SampleLen);
+            SetInt("_UnsharpMaskSize", um.BlurSize);
+            SetFloat("_UnsharpMaskInvDomainSigma", um.InvDomainSigma);
+            SetFloat("_UnsharpMaskDomainVariance", um.DomainVariance);
+            SetFloat("_UnsharpMaskDomainBias", um.DomainBias);
+            SetFloat("_UnsharpMaskMean", um.Mean);
+            SetFloat("_UnsharpMaskSharpness", um.Sharpness);
+        }
+        public void RenderUnsharpMask(int src, RT dst, UnsharpMask um){ Blit(src, dst, "UnsharpMask"); }
+        public void RenderUnsharpMask(int src, int dst, UnsharpMask um) { RenderUnsharpMask(src, workRT[dst], um); }
 
         public void RenderRGB2HSV(int src, RT dst) { Blit(src, dst, "RGB2HSV"); }
         public void RenderRGB2HSV(int src, int dst) { RenderRGB2HSV(src, workRT[dst]); }

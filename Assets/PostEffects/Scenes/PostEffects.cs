@@ -8,7 +8,7 @@ namespace UnityPostEffecs
         public enum EffectType
         {
             None, SBR, WCR, BF, AKF, SNN, FXDoG, Outline, 
-            Mask, Sobel, SST, TFM, LIC, GBlur, Posterize, 
+            Mask, Sobel, SST, TFM, LIC, GBlur, UMask, Posterize, 
             SNoise, FNoise, VNoise, Test, TestBF
         }
 

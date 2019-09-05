@@ -198,6 +198,14 @@
 		}
 		Pass
 		{
+			Name "UnsharpMask"
+			CGPROGRAM
+			#pragma vertex vert_img
+			#pragma fragment fragUnsharpMask
+			ENDCG
+		}
+		Pass
+		{
 			Name "RGB2HSV"
 			CGPROGRAM
 			#pragma vertex vert_img

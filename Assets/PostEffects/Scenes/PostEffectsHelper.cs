@@ -198,6 +198,7 @@ namespace UnityPostEffecs
                         case ET.TFM: pe.DebugParameters.TFMEnable = value; break;
                         case ET.LIC: pe.DebugParameters.LICEnable = value; break;
                         case ET.GBlur: pe.DebugParameters.GBlurEnable = value; break;
+                        case ET.UMask: pe.DebugParameters.UnsharpMaskEnable = value; break;
                         case ET.Posterize: pe.DebugParameters.PosterizeEnable = value; break;
                         case ET.SNoise: pe.DebugParameters.SimplexNoiseEnable = value; break;
                         case ET.FNoise: pe.DebugParameters.FlowNoiseEnable = value; break;
@@ -223,6 +224,7 @@ namespace UnityPostEffecs
                         case ET.TFM: return pe.DebugParameters.TFMEnable;
                         case ET.LIC: return pe.DebugParameters.LICEnable;
                         case ET.GBlur: return pe.DebugParameters.GBlurEnable;
+                        case ET.UMask: return pe.DebugParameters.UnsharpMaskEnable;
                         case ET.Posterize: return pe.DebugParameters.PosterizeEnable;
                         case ET.SNoise: return pe.DebugParameters.SimplexNoiseEnable;
                         case ET.FNoise: return pe.DebugParameters.FlowNoiseEnable;

@@ -35,8 +35,9 @@ float _SNNWeight;
 
 float4 fragSNN(v2f_img i) : SV_Target
 {
-	float4 center = smpl(i.uv);
-	float4 colorSum = 0.0;
+	// 前段でHSV空間にしている
+	float4 hsvCenter = smpl(i.uv);
+	float4 hsvSum = 0.0;
 
 	float2 offset = -_SNNRadius * UV_SIZE;
 	// 中心から点対称に二点を取得して、中心に近い点を採用する
@@ -50,17 +51,17 @@ float4 fragSNN(v2f_img i) : SV_Target
 			if (step(y, 0) * step(x, 0) == 1.0) { continue; }
 
 			offset.x += UV_SIZE.x;
-			float4 neighbor1 = smpl(i.uv + offset);
-			float4 neighbor2 = smpl(i.uv - offset);
-			float4 distance1 = hsvDistance(center, neighbor1);
-			float4 distance2 = hsvDistance(center, neighbor2);
-			float4 color = lerp(neighbor1, neighbor2, step(distance2, distance1));
-			colorSum += color * 2.0;
+			float4 hsvNeighbor1 = smpl(i.uv + offset);
+			float4 hsvNeighbor2 = smpl(i.uv - offset);
+			float4 distance1 = hsvDistance(hsvCenter, hsvNeighbor1);
+			float4 distance2 = hsvDistance(hsvCenter, hsvNeighbor2);
+			float4 hsv = lerp(hsvNeighbor1, hsvNeighbor2, step(distance2, distance1));
+			hsvSum += hsv * 2.0;
 		}
 		offset.y += UV_SIZE.y;
 	}
 
-	return colorSum / _SNNWeight;
+	return float4(hsv2rgb2(hsvSum / _SNNWeight), 1.0);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,41 +112,51 @@ float4 fragGBlur2(v2f_img i) : SV_Target
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// Unsharp Mask
+// Sharpen
 //////////////////////////////////////////////////////////////////////////////////////////////////
-int _UnsharpMaskLOD;
-int _UnsharpMaskTileSize;
-int _UnsharpMaskSize;
-float _UnsharpMaskInvDomainSigma;
-float _UnsharpMaskDomainVariance;
-float _UnsharpMaskDomainBias;
-float _UnsharpMaskMean;
-float _UnsharpMaskSharpness;
+int _SharpenLOD;
+int _SharpenTileSize;
+int _SharpenSize;
+float _SharpenInvDomainSigma;
+float _SharpenDomainVariance;
+float _SharpenDomainBias;
+float _SharpenMean;
+float _SharpenSharpness;
 
-float unsharpMask(float2 uv)
+float unsharpBlur(float2 uv)
 {
 	float lumSum = 0.0;
 	float weightSum = 0.0;
-	for (int y = 0; y < _UnsharpMaskSize; ++y) {
-		for (int x = 0; x < _UnsharpMaskSize; ++x) {
-			float2 offset = float2(x, y) * float(_UnsharpMaskTileSize) - _UnsharpMaskMean;
-			float2 domain = offset * _UnsharpMaskInvDomainSigma * _UnsharpMaskDomainBias;
-			float domainWeight = exp(-0.5 * dot(domain, domain)) * _UnsharpMaskDomainVariance;
+	for (int y = 0; y < _SharpenSize; ++y) {
+		for (int x = 0; x < _SharpenSize; ++x) {
+			float2 offset = float2(x, y) * float(_SharpenTileSize) - _SharpenMean;
+			float2 domain = offset * _SharpenInvDomainSigma * _SharpenDomainBias;
+			float domainWeight = exp(-0.5 * dot(domain, domain)) * _SharpenDomainVariance;
 
-			float lumNeighbor = rgb2lum(smpl(uv + offset * UV_SIZE, _UnsharpMaskLOD).rgb);
+			float lumNeighbor = smplLum(uv + offset * UV_SIZE, _SharpenLOD);
 			lumSum += lumNeighbor * domainWeight;
 			weightSum += domainWeight;
 		}
 	}
-	float neighbor = lumSum / weightSum;
-	float center = rgb2lum(smpl(uv, _UnsharpMaskLOD).rgb);
-	float unsharp = (center - neighbor) * _UnsharpMaskSharpness;
+
+	return lumSum / weightSum;
+}
+float4 fragSharpen(v2f_img i) : SV_Target{
+	float neighbor = unsharpBlur(i.uv);
+	float4 center = smpl(i.uv, _SharpenLOD);
+	float4 color = center + (center - neighbor) * _SharpenSharpness;
+
+	return saturate(color);
+}
+
+float unsharpMask(float2 uv)
+{
+	float neighbor = unsharpBlur(uv);
+	float center = smplLum(uv, _SharpenLOD);
+	float unsharp = (center - neighbor) * _SharpenSharpness;
 
 	return saturate(unsharp);
 }
-
-float4 fragUnsharpMask(v2f_img i) : SV_Target{
-	return unsharpMask(i.uv); 
-}
+float4 fragUnsharpMask(v2f_img i) : SV_Target{ return unsharpMask(i.uv); }
 
 #endif

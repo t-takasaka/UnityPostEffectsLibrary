@@ -354,22 +354,28 @@ namespace UnityPostEffecs
         public void RenderLIC(RT dst) { Blit(RT_TFM, dst, "LIC"); }
         public void RenderLIC(int dst) { RenderLIC(workRT[dst]); }
 
-        public void UpdateUnsharpMask(UnsharpMask um)
+        public void UpdateSharpen(Sharpen s)
         {
             if (!needsUpdate) { return; }
 
-            SetInt("_UnsharpMaskLOD", um.LOD);
-            SetInt("_UnsharpMaskTileSize", um.TileSize);
-            SetInt("_UnsharpMaskSampleLen", um.SampleLen);
-            SetInt("_UnsharpMaskSize", um.BlurSize);
-            SetFloat("_UnsharpMaskInvDomainSigma", um.InvDomainSigma);
-            SetFloat("_UnsharpMaskDomainVariance", um.DomainVariance);
-            SetFloat("_UnsharpMaskDomainBias", um.DomainBias);
-            SetFloat("_UnsharpMaskMean", um.Mean);
-            SetFloat("_UnsharpMaskSharpness", um.Sharpness);
+            SetInt("_SharpenLOD", s.LOD);
+            SetInt("_SharpenTileSize", s.TileSize);
+            SetInt("_SharpenSampleLen", s.SampleLen);
+            SetInt("_SharpenSize", s.BlurSize);
+            SetFloat("_SharpenInvDomainSigma", s.InvDomainSigma);
+            SetFloat("_SharpenDomainVariance", s.DomainVariance);
+            SetFloat("_SharpenDomainBias", s.DomainBias);
+            SetFloat("_SharpenMean", s.Mean);
+            SetFloat("_SharpenSharpness", s.Sharpness);
         }
-        public void RenderUnsharpMask(int src, RT dst, UnsharpMask um){ Blit(src, dst, "UnsharpMask"); }
-        public void RenderUnsharpMask(int src, int dst, UnsharpMask um) { RenderUnsharpMask(src, workRT[dst], um); }
+        public void RenderSharpen(int src, RT dst, Sharpen s)
+        { 
+            Blit(src, dst, s.UnsharpMask ? "UnsharpMask" : "Sharpen"); 
+        }
+        public void RenderSharpen(int src, int dst, Sharpen s) { RenderSharpen(src, workRT[dst], s); }
+
+        public void RenderComplementary(int src, RT dst) { Blit(src, dst, "Complementary"); }
+        public void RenderComplementary(int src, int dst) { RenderComplementary(src, workRT[dst]); }
 
         public void RenderRGB2HSV(int src, RT dst) { Blit(src, dst, "RGB2HSV"); }
         public void RenderRGB2HSV(int src, int dst) { RenderRGB2HSV(src, workRT[dst]); }

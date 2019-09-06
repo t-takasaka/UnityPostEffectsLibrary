@@ -198,10 +198,26 @@
 		}
 		Pass
 		{
+			Name "Sharpen"
+			CGPROGRAM
+			#pragma vertex vert_img
+			#pragma fragment fragSharpen
+			ENDCG
+		}
+		Pass
+		{
 			Name "UnsharpMask"
 			CGPROGRAM
 			#pragma vertex vert_img
 			#pragma fragment fragUnsharpMask
+			ENDCG
+		}
+		Pass
+		{
+			Name "Complementary"
+			CGPROGRAM
+			#pragma vertex vert_img
+			#pragma fragment fragComplementary
 			ENDCG
 		}
 		Pass

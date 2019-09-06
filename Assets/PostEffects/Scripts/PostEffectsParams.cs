@@ -428,10 +428,11 @@ namespace UnityPostEffecs
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
-    // Unsharp Mask
+    // Sharpen
     //////////////////////////////////////////////////////////////////////////////////////////////////
-    public class UnsharpMask
+    public class Sharpen
     {
+        public bool UnsharpMask;
         public int LOD, TileSize, SampleLen, BlurSize;
         public float InvDomainSigma;
         public float DomainVariance;
@@ -439,20 +440,21 @@ namespace UnityPostEffecs
         public float Mean;
         public float Sharpness;
  
-        public void Set(DebugOptions.InsUnsharpMask um) 
+        public void Set(DebugOptions.InsSharpen s) 
         {
-            LOD = um.LOD;
+            UnsharpMask = s.UnsharpMask;
+            LOD = s.LOD;
             TileSize = 1 << LOD;
-            SampleLen = Max(TileSize, um.SampleLen);
+            SampleLen = Max(TileSize, s.SampleLen);
 	        BlurSize = SampleLen / TileSize;
 
-            float domainSigma = SampleLen * (1.0f / TileSize) * um.DomainSigma;
+            float domainSigma = SampleLen * (1.0f / TileSize) * s.DomainSigma;
             InvDomainSigma = 1.0f / domainSigma;
             DomainVariance = 1.0f / (domainSigma * domainSigma * 2.0f);
-            DomainBias = um.DomainBias;
+            DomainBias = s.DomainBias;
 
 	        Mean = SampleLen * 0.5f;
-            Sharpness = um.Sharpness;
+            Sharpness = s.Sharpness;
         }
     }
 

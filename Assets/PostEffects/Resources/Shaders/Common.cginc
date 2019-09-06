@@ -46,6 +46,8 @@ static const float2 UV2TEX = _MainTex_TexelSize.zw;
 static const float ASPECT = _MainTex_TexelSize.w / _MainTex_TexelSize.z;
 static const float4x4 TEX2UV4x4 = { {TEX2UV, TEX2UV}, {TEX2UV, TEX2UV}, {TEX2UV, TEX2UV}, {TEX2UV, TEX2UV} };
 
+static const float3 LUM = float3(0.299, 0.587, 0.114);
+
 // GL_MAX_TEXTURE_IMAGE_UNITSを参考
 sampler2D _RT_WORK0, _RT_WORK1, _RT_WORK2, _RT_WORK3, _RT_WORK4, _RT_WORK5, _RT_WORK6, _RT_WORK7;
 sampler2D _RT_CACHE0, _RT_CACHE1;
@@ -110,12 +112,13 @@ inline float4 smpl(sampler2D tex, float2 uv) { return smpl(tex, uv, 0.0);  }
 inline float4 smpl(float2 uv, float lod) { return smpl(_MainTex, uv, lod); }
 inline float4 smpl(float2 uv) { return smpl(_MainTex, uv, 0.0); }
 
-inline float4 smplLum(sampler2D tex, float2 uv)
+inline float4 smplLum(sampler2D tex, float2 uv, float lod)
 {
-	float3 rgb = tex2Dlod(tex, float4(uv, 0.0, 0.0)).rgb;
-	return dot(float3(0.299, 0.587, 0.114), rgb);
+	float3 rgb = tex2Dlod(tex, float4(uv, 0.0, lod)).rgb;
+	return dot(LUM, rgb);
 }
-inline float4 smplLum(float2 uv) { return smplLum(_RT_ORIG, uv); }
+inline float4 smplLum(float2 uv, float lod) { return smplLum(_RT_ORIG, uv, lod); }
+inline float4 smplLum(float2 uv) { return smplLum(_RT_ORIG, uv, 0.0); }
 
 inline float4 smplAvg(sampler2D tex, float2 uv)
 {

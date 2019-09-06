@@ -24,7 +24,7 @@ namespace UnityPostEffecs
         private Outline outline = new Outline();
         private LIC lic = new LIC();
         private GBlur gblur = new GBlur();
-        private UnsharpMask umask = new UnsharpMask();
+        private Sharpen sha = new Sharpen();
         private SNoise snoise = new SNoise();
         private FNoise fnoise = new FNoise();
         private Test test = new Test();
@@ -68,7 +68,7 @@ namespace UnityPostEffecs
             fxdog.Set(pe.FXDoGParamters);
             lic.Set(pe.DebugParameters);
             gblur.Set(pe.DebugParameters.GBlurParameters);
-            umask.Set(pe.DebugParameters.UnsharpMaskParameters);
+            sha.Set(pe.DebugParameters.SharpenParameters);
             pst.Set(pe.DebugParameters.PosterizeParameters);
             snoise.Set(pe.DebugParameters.SimplexNoiseParameters);
             fnoise.Set(pe.DebugParameters.FlowNoiseParameters);
@@ -96,7 +96,8 @@ namespace UnityPostEffecs
                 case ET.TFM: TFM(dst); break;
                 case ET.LIC: LIC(dst); break;
                 case ET.GBlur: GBlur(dst); break;
-                case ET.UMask: UnsharpMask(dst); break;
+                case ET.Sharpen: Sharpen(dst); break;
+                case ET.Comp: Complementary(dst); break;
                 case ET.Posterize: Posterize(dst); break;
                 case ET.SNoise: SNoise(dst); break;
                 case ET.FNoise: FNoise(dst); break;
@@ -203,8 +204,7 @@ namespace UnityPostEffecs
             shader.UpdatePosterize(pst, true);
             shader.RenderPosterize(shader.RT_WORK0, shader.RT_WORK3);
             shader.UpdateSNN(snn);
-            shader.RenderSNN(shader.RT_WORK3, shader.RT_WORK0);
-            shader.RenderHSV2RGB(shader.RT_WORK0, dst);
+            shader.RenderSNN(shader.RT_WORK3, dst);
         }
         public void FXDoG(RT dst)
         {
@@ -224,12 +224,15 @@ namespace UnityPostEffecs
             shader.UpdateLIC(lic);
             shader.RenderLIC(dst);
         }
-        public void UnsharpMask(RT dst)
+        public void Sharpen(RT dst)
         {
-            shader.UpdateUnsharpMask(umask); 
-            shader.RenderUnsharpMask(shader.RT_WORK0, dst, umask);
+            shader.UpdateSharpen(sha); 
+            shader.RenderSharpen(shader.RT_WORK0, dst, sha);
         }
-
+        public void Complementary(RT dst)
+        {
+            shader.RenderComplementary(shader.RT_WORK0, dst);
+        }
         public void Posterize(RT dst)
         {
             shader.UpdateGBlur(gblur); 

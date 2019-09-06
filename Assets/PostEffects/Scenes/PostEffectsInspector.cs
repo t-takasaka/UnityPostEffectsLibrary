@@ -321,18 +321,21 @@ namespace UnityPostEffecs
         }
         [SerializeField] internal InsGBlur GBlurParameters = new InsGBlur();
 
-        [SerializeField] internal bool UnsharpMaskEnable = false;
+        [SerializeField] internal bool SharpenEnable = false;
         [Serializable]
-        public class InsUnsharpMask
+        public class InsSharpen
         {
-            [SerializeField, Range(1, 128)] internal int SampleLen = 64;
-            [SerializeField, Range(0, 3)] internal int LOD = 2;
-            [SerializeField, Range(0, 512)] internal int Sharpness = 256;
+            [SerializeField] internal bool UnsharpMask = false;
+            [SerializeField, Range(1, 128)] internal int SampleLen = 8;
+            [SerializeField, Range(0, 3)] internal int LOD = 0;
+            [SerializeField, Range(0, 512)] internal int Sharpness = 1;
             [HideInInspector][SerializeField, Range(0.1f, 10.0f)] internal float DomainSigma = 1.0f;
             [HideInInspector][SerializeField, Range(0.1f, 10.0f)] internal float DomainBias = 1.0f;
         }
-        [SerializeField] internal InsUnsharpMask UnsharpMaskParameters = new InsUnsharpMask();
-
+        [SerializeField] internal InsSharpen SharpenParameters = new InsSharpen();
+        
+        [SerializeField] internal bool ComplementaryEnable = false;
+        
         [SerializeField] internal bool PosterizeEnable = false;
         [Serializable]
         public class InsPosterize

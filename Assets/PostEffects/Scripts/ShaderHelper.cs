@@ -10,7 +10,7 @@ namespace UnityPostEffecs
         {
             "Entry", "MaskFace", "MaskBody", "SBR", "WCR", "HandTremor", "BF", "FBF", "AKF", "SNN", 
             "FXDoGGradient", "FXDoGTangent", "Posterize", "Outline",
-            "Sobel3", "TFM", "LIC", "GBlur", "GBlur2", "UnsharpMask", 
+            "Sobel3", "TFM", "LIC", "GBlur", "GBlur2", "Sharpen", "UnsharpMask", "Complementary", 
             "RGB2HSV", "HSV2RGB", "RGB2HSL", "HSL2RGB", "RGB2YUV", "YUV2RGB", "RGB2LAB", "LAB2RGB",
             "GNoise", "SNoise", "FNoise", "VNoise", "Lerp", "Test", "TestBF"
         };
@@ -48,8 +48,8 @@ namespace UnityPostEffecs
             "_LICScale", "_LICMaxLen", "_LICVariance",
             "_GBlurLOD", "_GBlurTileSize", "_GBlurSampleLen", "_GBlurSize", "_GBlurInvDomainSigma", "_GBlurDomainVariance", 
             "_GBlurDomainBias", "_GBlurMean", "_GBlurOffsetX", "_GBlurOffsetY", "_GBlurDomainWeight", 
-            "_UnsharpMaskLOD", "_UnsharpMaskTileSize", "_UnsharpMaskSampleLen", "_UnsharpMaskSize", "_UnsharpMaskInvDomainSigma", 
-            "_UnsharpMaskDomainVariance", "_UnsharpMaskDomainBias", "_UnsharpMaskMean", "_UnsharpMaskSharpness", 
+            "_SharpenLOD", "_SharpenTileSize", "_SharpenSampleLen", "_SharpenSize", "_SharpenInvDomainSigma", 
+            "_SharpenDomainVariance", "_SharpenDomainBias", "_SharpenMean", "_SharpenSharpness", 
             "_SNOIZE_SIZE", "_SNOIZE_SCALE", "_SNOIZE_SPEED",
             "_FNOIZE_SIZE", "_FNOIZE_SCALE", "_FNOIZE_SPEED",
             "_RuledLineDensity", "_RuledLineInvSize", "_RuledLineRotMat", 

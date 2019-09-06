@@ -141,11 +141,17 @@ float3 xyz2rgb(float3 xyz)
 float3 lab2rgb(float3 lab)
 {
 	float3 xyz = lab2xyz(float3(100.0 * lab.x, 255.0 * (lab.y - 0.5), 255.0 * (lab.z - 0.5)));
-	return xyz2rgb(xyz);
+	return saturate(xyz2rgb(xyz));
 }
 
-float rgb2lum(float3 rgb) { return dot(float3(0.299, 0.587, 0.114), rgb); }
+float rgb2lum(float3 rgb) { return dot(LUM, rgb); }
 float rgb2avg(float3 rgb) { return (rgb.r + rgb.g + rgb.b) * 0.333; }
+
+float4 complementary(float4 color) {
+	float4 high = max(color.r, max(color.g, color.b));
+	float4 low = min(color.r, min(color.b, color.b));
+	return (high + low) - color;
+}
 
 inline float4 fragRGB2HSV(v2f_img i) : SV_Target{ return rgb2hsv2(tex2Dlod(_MainTex, float4(i.uv, 0, 0)).rgb); }
 inline float4 fragHSV2RGB(v2f_img i) : SV_Target{ return float4(hsv2rgb2(tex2Dlod(_MainTex, float4(i.uv, 0, 0))), 1.0); }
@@ -155,12 +161,7 @@ inline float4 fragRGB2YUV(v2f_img i) : SV_Target{ return float4(rgb2yuv(tex2Dlod
 inline float4 fragYUV2RGB(v2f_img i) : SV_Target{ return float4(yuv2rgb(tex2Dlod(_MainTex, float4(i.uv, 0, 0))), 1.0); }
 inline float4 fragRGB2LAB(v2f_img i) : SV_Target{ return float4(rgb2lab(tex2Dlod(_MainTex, float4(i.uv, 0, 0)).rgb), 1.0); }
 inline float4 fragLAB2RGB(v2f_img i) : SV_Target{ return float4(lab2rgb(tex2Dlod(_MainTex, float4(i.uv, 0, 0))), 1.0); }
-
-float _HSV_H1, _HSV_H2, _HSV_S, _HSV_V;
-inline float4 fragDebugHSV(v2f_img i) : SV_Target
-{
-	return float4(hsv2rgb2(float4(_HSV_H1, _HSV_H2, _HSV_S, _HSV_V)), 1.0);
-}
+inline float4 fragComplementary(v2f_img i) : SV_Target{ return complementary(tex2Dlod(_MainTex, float4(i.uv, 0, 0))); }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Mask
